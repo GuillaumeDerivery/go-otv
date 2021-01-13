@@ -11,7 +11,7 @@ https://golang.org/doc/install
 Run the project:
 ```bash
 go build
-./go-otv
+AUD="YOUR_AUDIENCE" ISS="YOUR_ISSUER" JWKS_ENDPOINT="YOUR_ISSUER_JWKS_CERT_ENDPOINT" ./go-otv
 ```
 
 The docker way:
