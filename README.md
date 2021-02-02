@@ -22,7 +22,7 @@ By putting this line in the `Ingress` you can pass the auth module the generated
 
 ```yml
 nginx.ingress.kubernetes.io/auth-snippet: |
-    proxy_set_header X-Parent-Request-Id $req_id;
+    proxy_set_header X-Parent-Request-Id $request_id;
 ```
 
 It will prefix the request logs.
