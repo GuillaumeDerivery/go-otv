@@ -14,8 +14,18 @@ By putting this line in the `Ingress` you can it protect with a mandatory Author
 nginx.ingress.kubernetes.io/auth-url: http://GO-OTV-SERVICE.NAMESPACE.svc.cluster.local/validate
 ```
 
-If you have public routes to handle, just create a new `Ingress` for the same host without the previous line.
+If you have public routes to handle, just create a new `Ingress` for the same host without the previous line.  
 
+### To go further with Ingress & tracing
+
+By putting this line in the `Ingress` you can pass the auth module the generated x-request-id from the parent client request.
+
+```yml
+nginx.ingress.kubernetes.io/auth-snippet: |
+    proxy_set_header X-Parent-Request-Id $req_id;
+```
+
+It will prefix the request logs.
 ## Pre-requisite
 
 ### > GO 1.15
