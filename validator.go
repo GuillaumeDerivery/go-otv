@@ -46,8 +46,8 @@ func ExtractTokenFromAuthHeader(r *http.Request) (string, error) {
 	xRequestId := r.Header.Get("X-Parent-Request-Id")
 
 	log.Printf("[%s] Authorization header is: %s", xRequestId, authHeader)
+
 	if authHeader == "" {
-		log.Printf("[%s] Error: Required authorization token not found", xRequestId)
 		return "", errors.New("Authorization header format must be Bearer {token}")
 	}
 
@@ -57,6 +57,7 @@ func ExtractTokenFromAuthHeader(r *http.Request) (string, error) {
 		return "", errors.New("Authorization header format must be Bearer {token}")
 	}
 
+	log.Printf("[%s] Token is: %s", xRequestId, authHeaderParts[1])
 	return authHeaderParts[1], nil
 }
 
@@ -94,21 +95,23 @@ func Validate(jwks *jwk.Set, configuration ValidationConfig)  ValidationType {
 
 		if originalMethod == http.MethodOptions {
 			log.Printf("[%s] Method OPTIONS is authorized directly", xRequestId)
-			makeJsonResponse(responseWriter, http.StatusOK, "OK")
+			makeJsonResponse(xRequestId, responseWriter, http.StatusOK, "OK")
 			return
 		}
 
 		// Token extraction with error management
 		token, err := ExtractTokenFromAuthHeader(request)
 		if err != nil {
-			makeJsonResponse(responseWriter, http.StatusUnauthorized, fmt.Sprintf("Error: Extracting JWT: %v", err))
+			log.Printf("[%s] Error extracting JWT: %v", xRequestId, err)
+			makeJsonResponse(xRequestId, responseWriter, http.StatusUnauthorized, fmt.Sprintf("Error: Extracting JWT: %v", err))
 			return
 		}
 
 		// Now parse the token
 		parsedToken, err := jwt.ParseString(token, jwt.WithKeySet(jwks))
 		if err != nil {
-			makeJsonResponse(responseWriter, http.StatusUnauthorized, fmt.Sprintf("Error: Parsing JWT: %v", err))
+			log.Printf("[%s] Error parsing JWT: %v", xRequestId, err)
+			makeJsonResponse(xRequestId, responseWriter, http.StatusUnauthorized, fmt.Sprintf("Error: Parsing JWT: %v", err))
 			return
 		}
 		jsonParsedToken, _ := json.Marshal(parsedToken)
@@ -120,23 +123,26 @@ func Validate(jwks *jwk.Set, configuration ValidationConfig)  ValidationType {
 			jwt.WithAudience(configuration.Aud),
 		)
 		if err != nil {
-			makeJsonResponse(responseWriter, http.StatusUnauthorized, fmt.Sprintf("Error validating JWT: %v", err))
+			log.Printf("[%s] Error validating JWT: %v", xRequestId, err)
+			makeJsonResponse(xRequestId, responseWriter, http.StatusUnauthorized, fmt.Sprintf("Error validating JWT: %v", err))
 			return 
 		}
-		makeJsonResponse(responseWriter, http.StatusOK, "OK")
+		makeJsonResponse(xRequestId, responseWriter, http.StatusOK, "OK")
 	}
 	return handler
 }
 
-func makeJsonResponse(responseWriter http.ResponseWriter, status int, message string) {
+func makeJsonResponse(xRequestId string, responseWriter http.ResponseWriter, status int, message string) {
 	response := GoResponse{Message: message}
 	js, err := json.Marshal(response)
+
 	if err != nil {
 		responseWriter.WriteHeader(http.StatusInternalServerError)
 		return
 	  }
 	  if status != http.StatusOK {
 	  }
+	  log.Printf("[%s] Ending with: %x", xRequestId, js)
 	  responseWriter.WriteHeader(status)
 	  responseWriter.Write(js)
 }
