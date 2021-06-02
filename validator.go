@@ -120,14 +120,31 @@ func Validate(jwks *jwk.Set, configuration ValidationConfig)  ValidationType {
 		err = jwt.Validate(
 			parsedToken,
 			jwt.WithIssuer(configuration.Iss),
-			jwt.WithAudience(configuration.Aud),
 		)
 		if err != nil {
-			log.Printf("[%s] Error validating JWT: %v", xRequestId, err)
+			log.Printf("[%s] Error validating issuer in JWT: %v", xRequestId, err)
 			makeJsonResponse(xRequestId, responseWriter, http.StatusUnauthorized, fmt.Sprintf("Error validating JWT: %v", err))
 			return 
 		}
-		makeJsonResponse(xRequestId, responseWriter, http.StatusOK, "OK")
+
+		var passedAudienceCheck = false
+		for _, element := range strings.Split(strings.TrimSpace(configuration.Aud), ",") {
+			err = jwt.Validate(
+				parsedToken,
+				jwt.WithAudience(element),
+			)
+			if err == nil {
+				passedAudienceCheck = true
+			}
+		}
+
+		if passedAudienceCheck == true {
+			makeJsonResponse(xRequestId, responseWriter, http.StatusOK, "OK")
+			return 
+		}
+	
+		log.Printf("[%s] Error validating audience in JWT: %v", xRequestId, err)
+		makeJsonResponse(xRequestId, responseWriter, http.StatusUnauthorized, fmt.Sprintf("Error validating JWT: %v", err))
 	}
 	return handler
 }
