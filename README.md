@@ -48,7 +48,7 @@ docker run -e AUD="YOUR_AUDIENCE" -e ISS="YOUR_ISSUER" -e JWKS_ENDPOINT="YOUR_IS
 
 | Key | Commentary | Default value |
 |-----|------------|---------------|
-| AUD | Token's Audience  | "" |
+| AUD | Possible Audiences separated by a ,  | "" |
 | ISS | Token's Issuer | "" |
 | JWKS_ENDPOINT | The ISSUER endpoint | "" |
 
