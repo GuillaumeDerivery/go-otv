@@ -1,4 +1,5 @@
-# GO - OIDC (Open ID Connect) Token Validation
+# Kheona Solutions - GO Oidc Token Validation
+`Open ID Connect` token validator written in go for light speed validation
 
 This package aims to be bound to the nginx `auth_request`(http://nginx.org/en/docs/http/ngx_http_auth_request_module.html) to validate incoming JWT Tokens in the Authorization header.
 
