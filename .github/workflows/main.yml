@@ -3,7 +3,7 @@ on:
     branches:
       - main
 
-name: Publish to Amazon ECR
+name: CD Production Workflow
 
 jobs:
   deploy:
